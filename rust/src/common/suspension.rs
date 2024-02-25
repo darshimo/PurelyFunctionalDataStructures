@@ -8,7 +8,7 @@ pub struct Susp<T>(Rc<RefCell<Inner<T>>>);
 
 enum Inner<T> {
     Fun(Box<dyn FnOnce() -> T>),
-    Val(Rc<T>),
+    Val(T),
 }
 use Inner::*;
 
@@ -17,18 +17,17 @@ impl<T> Susp<T> {
         Susp(Rc::new(RefCell::new(Fun(f))))
     }
 
-    pub fn get(&self) -> Rc<T> {
-        let ret;
-        match &mut *self.0.borrow_mut() {
+    pub fn eval(&self) {
+        let v = match &mut *self.0.borrow_mut() {
             Fun(r) => {
                 let f = std::mem::replace(r, Box::new(|| panic!("hogefuga")));
-                ret = Rc::new(f())
+                f()
             }
-            Val(x) => ret = x.clone(),
-        }
-
-        *self.0.borrow_mut() = Val(ret.clone());
-        ret
+            Val(_) => {
+                return;
+            }
+        };
+        *self.0.borrow_mut() = Val(v);
     }
 }
 
@@ -69,22 +68,33 @@ mod tests {
 
     fn heavy_func() -> u32 {
         let mut ret = 0;
-        for _ in 0..300000000 {
+        for _ in 0..500000000 {
             ret += 1;
         }
         ret
     }
 
     #[test]
+    fn it_works() {
+        let s = Susp::new(Box::new(heavy_func));
+
+        println!("{}", s);
+        s.eval();
+        println!("{}", s);
+        s.eval();
+        println!("{}", s);
+    }
+
+    #[test]
     fn test_suspension() {
         // 評価前のSuspensionをcloneしてから評価しても，評価結果が共有されることを確認
-        let s1 = Susp::new(Box::new(|| heavy_func()));
+        let s1 = Susp::new(Box::new(heavy_func));
         println!("clone");
         let s2 = s1.clone();
-        println!("get1");
-        let _ = s1.get(); // 遅い
-        println!("get2");
-        let _ = s2.get(); // 速い
-        println!("fin");
+        println!("before eval");
+        s1.eval(); // 遅い
+        println!("v: {}", s1);
+        s2.eval(); // 速い
+        println!("v: {}", s2);
     }
 }
