@@ -4,7 +4,7 @@ use std::{
     rc::Rc,
 };
 
-pub struct Suspension<T>(Rc<RefCell<Inner<T>>>);
+pub struct Susp<T>(Rc<RefCell<Inner<T>>>);
 
 enum Inner<T> {
     Fun(Box<dyn FnOnce() -> T>),
@@ -12,9 +12,9 @@ enum Inner<T> {
 }
 use Inner::*;
 
-impl<T> Suspension<T> {
+impl<T> Susp<T> {
     pub fn new(f: Box<dyn FnOnce() -> T>) -> Self {
-        Suspension(Rc::new(RefCell::new(Fun(f))))
+        Susp(Rc::new(RefCell::new(Fun(f))))
     }
 
     pub fn get(&self) -> Rc<T> {
@@ -32,13 +32,13 @@ impl<T> Suspension<T> {
     }
 }
 
-impl<T> Clone for Suspension<T> {
+impl<T> Clone for Susp<T> {
     fn clone(&self) -> Self {
-        Suspension(self.0.clone())
+        Susp(self.0.clone())
     }
 }
 
-impl<T: Debug> Debug for Suspension<T> {
+impl<T: Debug> Debug for Susp<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &*self.0.borrow() {
             Fun(_) => {
@@ -51,7 +51,7 @@ impl<T: Debug> Debug for Suspension<T> {
     }
 }
 
-impl<T: Display> Display for Suspension<T> {
+impl<T: Display> Display for Susp<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &*self.0.borrow() {
             Fun(_) => {
@@ -65,7 +65,7 @@ impl<T: Display> Display for Suspension<T> {
 }
 
 mod tests {
-    use super::Suspension;
+    use super::Susp;
 
     fn heavy_func() -> u32 {
         let mut ret = 0;
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn test_suspension() {
         // 評価前のSuspensionをcloneしてから評価しても，評価結果が共有されることを確認
-        let s1 = Suspension::new(Box::new(|| heavy_func()));
+        let s1 = Susp::new(Box::new(|| heavy_func()));
         println!("clone");
         let s2 = s1.clone();
         println!("get1");
