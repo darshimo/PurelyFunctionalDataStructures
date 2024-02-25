@@ -4,7 +4,6 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Clone)]
 pub struct Suspension<T>(Rc<RefCell<Inner<T>>>);
 
 enum Inner<T> {
@@ -30,6 +29,12 @@ impl<T> Suspension<T> {
 
         *self.0.borrow_mut() = Val(ret.clone());
         ret
+    }
+}
+
+impl<T> Clone for Suspension<T> {
+    fn clone(&self) -> Self {
+        Suspension(self.0.clone())
     }
 }
 
