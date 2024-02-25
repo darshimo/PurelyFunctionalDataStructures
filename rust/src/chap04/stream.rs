@@ -77,15 +77,51 @@ impl<T: 'static> Stack<T> for Stream<T> {
     }
 
     fn append(&self, t: &Self) -> Susp<Self> {
-        unimplemented!()
+        let s = self.clone();
+        let t = t.clone();
+        Susp::new(Box::new(move || match &*s.0.get() {
+            Nil => t.clone(),
+            Cons(x, s) => {
+                let x = x.clone();
+                let s = s.clone();
+                Stream(Susp::new(Box::new(move || Cons(x, s.get().append(&t)))))
+            }
+        }))
     }
 
     fn take(&self, n: usize) -> Susp<Self> {
-        unimplemented!()
+        let s = self.clone();
+        Susp::new(Box::new(move || {
+            if n > 0 {
+                match &*s.0.get() {
+                    Nil => Stream(Susp::new(Box::new(|| Nil))),
+                    Cons(x, s) => {
+                        let x = x.clone();
+                        let s = s.clone();
+                        Stream(Susp::new(Box::new(move || Cons(x, s.get().take(n - 1)))))
+                    }
+                }
+            } else {
+                Stream(Susp::new(Box::new(|| Nil)))
+            }
+        }))
     }
 
     fn drop(&self, n: usize) -> Susp<Self> {
-        unimplemented!()
+        let s = self.clone();
+        Susp::new(Box::new(move || {
+            if n > 0 {
+                match &*s.0.get() {
+                    Nil => Stream(Susp::new(Box::new(|| Nil))),
+                    Cons(_, s) => {
+                        let s = s.clone();
+                        (&*(&*s.get()).drop(n - 1).get()).clone()
+                    }
+                }
+            } else {
+                s
+            }
+        }))
     }
 
     fn reverse(s: Self) -> Susp<Self> {
@@ -108,22 +144,38 @@ mod tests {
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
-        let _ = s2.get().head();
         println!();
+        let x = &*s2.get().head().get();
+        if let Some(x) = x {
+            println!("{}", x);
+        }
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
+        println!();
         let _ = s1.get().head();
-        println!();
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
-        let _ = s1.get().tail();
         println!();
+        let _ = s1.get().tail();
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
+
+        println!();
+        let n = Stream::empty();
+        let s = n.get().cons(Rc::new(1));
+        let s = s.get().cons(Rc::new(2));
+        let s = s.get().cons(Rc::new(3));
+        let s = s.get().cons(Rc::new(4));
+        let s = s.get().cons(Rc::new(5));
+        let t = (&*s.get()).drop(2);
+        println!("{}", s);
+        println!("{:?}", t.get().head().get());
+        println!("{}", s);
+        println!("{}", t);
     }
 }
