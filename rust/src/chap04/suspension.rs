@@ -3,24 +3,26 @@ use std::{
     rc::Rc,
 };
 
-pub enum Suspension<T> {
+pub struct Suspension<T>(Inner<T>);
+
+enum Inner<T> {
     Fun(Box<dyn FnOnce() -> T>),
     Val(Rc<T>),
 }
-use Suspension::*;
+use Inner::*;
 
 impl<T> Suspension<T> {
     pub fn new(f: Box<dyn FnOnce() -> T>) -> Self {
-        Fun(f)
+        Suspension(Fun(f))
     }
 
     pub fn get(&mut self) -> Rc<T> {
-        match self {
+        match &mut self.0 {
             Val(x) => x.clone(),
             Fun(r) => {
                 let f = std::mem::replace(r, Box::new(|| panic!()));
                 let x = Rc::new(f());
-                *self = Val(x.clone());
+                *self = Suspension(Val(x.clone()));
                 x
             }
         }
@@ -29,7 +31,7 @@ impl<T> Suspension<T> {
 
 impl<T: Debug> Debug for Suspension<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
+        match &self.0 {
             Fun(_) => {
                 write!(f, "LazyFun")
             }
@@ -42,7 +44,7 @@ impl<T: Debug> Debug for Suspension<T> {
 
 impl<T: Display> Display for Suspension<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
+        match &self.0 {
             Fun(_) => {
                 write!(f, "LazyFun")
             }
