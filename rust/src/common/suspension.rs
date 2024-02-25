@@ -21,7 +21,7 @@ impl<T> Susp<T> {
         let ret;
         match &mut *self.0.borrow_mut() {
             Fun(r) => {
-                let f = std::mem::replace(r, Box::new(|| panic!("hogefuga")));
+                let f = std::mem::replace(r, Box::new(|| panic!()));
                 ret = Rc::new(f())
             }
             Val(x) => ret = x.clone(),
@@ -42,7 +42,7 @@ impl<T: Debug> Debug for Susp<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &*self.0.borrow() {
             Fun(_) => {
-                write!(f, "LazyFun")
+                write!(f, "<LazyFun>")
             }
             Val(x) => {
                 write!(f, "{:?}", x)
@@ -55,7 +55,7 @@ impl<T: Display> Display for Susp<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &*self.0.borrow() {
             Fun(_) => {
-                write!(f, "LazyFun")
+                write!(f, "<LazyFun>")
             }
             Val(x) => {
                 write!(f, "{}", x)
