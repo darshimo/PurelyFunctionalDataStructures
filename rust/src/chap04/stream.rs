@@ -5,9 +5,18 @@ struct Stream<T>(Susp<StreamCell<T>>);
 
 enum StreamCell<T> {
     Nil,
-    Cons(Rc<T>, Stream<T>),
+    Cons(Rc<T>, Susp<Stream<T>>),
 }
 use StreamCell::*;
+
+impl<T> Clone for StreamCell<T> {
+    fn clone(&self) -> Self {
+        match self {
+            Nil => Nil,
+            Cons(x, t) => Cons(x.clone(), t.clone()),
+        }
+    }
+}
 
 impl<T: Display> Display for StreamCell<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -31,51 +40,55 @@ impl<T: Display> Display for Stream<T> {
 }
 
 impl<T: 'static> Stack<T> for Stream<T> {
-    fn empty() -> Self {
-        Stream(Susp::new(Box::new(|| Nil)))
+    fn empty() -> Susp<Self> {
+        Susp::new(Box::new(|| Stream(Susp::new(Box::new(|| Nil)))))
     }
 
-    fn is_empty(&self) -> bool {
-        match &*self.0.get() {
+    fn is_empty(&self) -> Susp<bool> {
+        let s = self.clone();
+
+        Susp::new(Box::new(move || match &*s.0.get() {
             Nil => true,
             Cons(_, _) => false,
-        }
+        }))
     }
 
-    fn cons(&self, x: Rc<T>) -> Self {
-        let t = self.clone();
-        Stream(Susp::new(Box::new(|| Cons(x, t))))
+    fn cons(&self, x: Rc<T>) -> Susp<Self> {
+        let s = self.clone();
+        Susp::new(Box::new(|| {
+            Stream(Susp::new(Box::new(|| Cons(x, Susp::new(Box::new(|| s))))))
+        }))
     }
 
-    fn head(&self) -> Option<Rc<T>> {
-        // returnもsuspension?
-        match &*self.0.get() {
+    fn head(&self) -> Susp<Option<Rc<T>>> {
+        let s = self.clone();
+        Susp::new(Box::new(move || match &*s.0.get() {
             Nil => None,
             Cons(x, _) => Some(x.clone()),
-        }
+        }))
     }
 
-    fn tail(&self) -> Option<Self> {
-        // returnもsuspension?
-        match &*self.0.get() {
+    fn tail(&self) -> Susp<Option<Self>> {
+        let s = self.clone();
+        Susp::new(Box::new(move || match &*s.0.get() {
             Nil => None,
-            Cons(_, t) => Some(t.clone()),
-        }
+            Cons(_, t) => Some((&*t.get()).clone()),
+        }))
     }
 
-    fn append(&self, t: &Self) -> Self {
+    fn append(&self, t: &Self) -> Susp<Self> {
         unimplemented!()
     }
 
-    fn take(&self, n: usize) -> Self {
+    fn take(&self, n: usize) -> Susp<Self> {
         unimplemented!()
     }
 
-    fn drop(&self, n: usize) -> Self {
+    fn drop(&self, n: usize) -> Susp<Self> {
         unimplemented!()
     }
 
-    fn reverse(s: Self) -> Self {
+    fn reverse(s: Self) -> Susp<Self> {
         unimplemented!()
     }
 }
@@ -88,26 +101,26 @@ mod tests {
     #[test]
     fn test_stream() {
         let n = Stream::empty();
-        let s1 = n.cons(Rc::new(3));
-        let s2 = Stream::empty().cons(Rc::new(s1.clone()));
+        let s1 = n.get().cons(Rc::new(3));
+        let s2 = Stream::empty().get().cons(Rc::new(s1.clone()));
 
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
-        let _ = s2.head();
+        let _ = s2.get().head();
         println!();
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
-        let _ = s1.head();
+        let _ = s1.get().head();
         println!();
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
-        let _ = s1.tail();
+        let _ = s1.get().tail();
         println!();
         println!("n : {}", n);
         println!("s1: {}", s1);
