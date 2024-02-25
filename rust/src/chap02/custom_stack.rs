@@ -3,12 +3,12 @@ use std::rc::Rc;
 use super::stack::Stack;
 
 // 図2.3
-pub struct CustomStack<T>(Rc<Inner<T>>);
-enum Inner<T> {
+pub struct CustomStack<T>(Rc<CustomStackCell<T>>);
+enum CustomStackCell<T> {
     Nil,
-    Cons(Rc<T>, Rc<Inner<T>>),
+    Cons(Rc<T>, CustomStack<T>),
 }
-use Inner::*;
+use CustomStackCell::*;
 
 impl<T> Stack<T> for CustomStack<T> {
     fn empty() -> Self {
@@ -31,12 +31,12 @@ impl<T> Stack<T> for CustomStack<T> {
     }
 
     fn cons(&self, x: T) -> Self {
-        CustomStack(Rc::new(Cons(Rc::new(x), self.0.clone())))
+        CustomStack(Rc::new(Cons(Rc::new(x), CustomStack(self.0.clone()))))
     }
 
     fn tail(&self) -> Option<Self> {
         match &*self.0 {
-            Cons(_, t) => Some(CustomStack(t.clone())),
+            Cons(_, t) => Some(CustomStack(t.0.clone())),
             Nil => None,
         }
     }
