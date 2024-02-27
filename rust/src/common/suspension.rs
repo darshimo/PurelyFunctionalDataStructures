@@ -33,19 +33,14 @@ impl<T> Susp<T> {
     }
 
     pub fn get(&self) -> Rc<T> {
-        let ret = match &mut *self.0.borrow_mut() {
-            Fun(r) => {
-                let f = std::mem::replace(r, Box::new(|| panic!()));
-                Rc::new(f())
-            }
-            Val(x) => x.clone(),
-            Tmp(r) => {
-                let f = std::mem::replace(r, Box::new(|| panic!()));
-                f().get()
-            }
+        let ret = match self.0.replace(Fun(Box::new(|| unreachable!()))) {
+            Fun(f) => Rc::new(f()),
+            Val(x) => x,
+            Tmp(f) => f().get(),
         };
 
         *self.0.borrow_mut() = Val(ret.clone());
+
         ret
     }
 
