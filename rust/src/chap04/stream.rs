@@ -143,44 +143,42 @@ mod tests {
     #[test]
     fn test_stream() {
         let n = Stream::empty();
-        let s1 = n.get().cons(Rc::new(3));
-        let s2 = Stream::empty().get().cons(Rc::new(s1.clone()));
+        let s1 = n.cons(Rc::new(3));
+        let s2 = Stream::empty().cons(Rc::new(s1.clone()));
 
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
         println!();
-        let x = &*s2.get().head().get();
-        if let Some(x) = x {
-            println!("{}", x);
-        }
+        let x = &*s2.head().get();
+        println!("{}", x);
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
         println!();
-        let _ = s1.get().head();
+        let _ = s1.head().get();
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
         println!();
-        let _ = s1.get().tail();
+        let _ = s1.tail().is_empty().get();
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
         println!();
         let n = Stream::empty();
-        let s = n.get().cons(Rc::new(1));
-        let s = s.get().cons(Rc::new(2));
-        let s = s.get().cons(Rc::new(3));
-        let s = s.get().cons(Rc::new(4));
-        let s = s.get().cons(Rc::new(5));
-        let t = (&*s.get()).drop(2);
+        let s = n.cons(Rc::new(5));
+        let s = s.cons(Rc::new(4));
+        let s = s.cons(Rc::new(3));
+        let s = s.cons(Rc::new(2));
+        let s = s.cons(Rc::new(1));
+        let t = s.drop(2);
         println!("{}", s);
-        println!("{:?}", t.get().head().get());
+        println!("{:?}", t.head().get());
         println!("{}", s);
         println!("{}", t);
     }
