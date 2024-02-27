@@ -1,3 +1,5 @@
+use crate::lazy;
+
 use super::{stack::Stack, suspension::Susp};
 use std::{fmt::Display, rc::Rc};
 
@@ -41,87 +43,82 @@ impl<T: Display> Display for Stream<T> {
 
 impl<T: 'static> Stack<T> for Stream<T> {
     fn empty() -> Susp<Self> {
-        Susp::new(Box::new(|| Stream(Susp::new(Box::new(|| Nil)))))
+        lazy!(Stream(Susp::new(Box::new(|| Nil))))
     }
 
     fn is_empty(&self) -> Susp<bool> {
         let s = self.clone();
 
-        Susp::new(Box::new(move || match &*s.0.get() {
+        lazy!(match &*s.0.get() {
             Nil => true,
             Cons(_, _) => false,
-        }))
+        })
     }
 
     fn cons(&self, x: Rc<T>) -> Susp<Self> {
         let s = self.clone();
-        Susp::new(Box::new(|| {
-            Stream(Susp::new(Box::new(|| Cons(x, Susp::new(Box::new(|| s))))))
-        }))
+        lazy!(Stream(lazy!(Cons(x, lazy!(s)))))
     }
 
     fn head(&self) -> Susp<Option<Rc<T>>> {
         let s = self.clone();
-        Susp::new(Box::new(move || match &*s.0.get() {
+        lazy!(match &*s.0.get() {
             Nil => None,
             Cons(x, _) => Some(x.clone()),
-        }))
+        })
     }
 
     fn tail(&self) -> Susp<Option<Self>> {
         let s = self.clone();
-        Susp::new(Box::new(move || match &*s.0.get() {
+        lazy!(match &*s.0.get() {
             Nil => None,
             Cons(_, t) => Some((&*t.get()).clone()),
-        }))
+        })
     }
 
     fn append(&self, t: &Self) -> Susp<Self> {
         let s = self.clone();
         let t = t.clone();
-        Susp::new(Box::new(move || match &*s.0.get() {
+        lazy!(match &*s.0.get() {
             Nil => t.clone(),
             Cons(x, s) => {
                 let x = x.clone();
                 let s = s.clone();
-                Stream(Susp::new(Box::new(move || Cons(x, s.get().append(&t)))))
+                Stream(lazy!(Cons(x, s.get().append(&t))))
             }
-        }))
+        })
     }
 
     fn take(&self, n: usize) -> Susp<Self> {
         let s = self.clone();
-        Susp::new(Box::new(move || {
-            if n > 0 {
-                match &*s.0.get() {
-                    Nil => Stream(Susp::new(Box::new(|| Nil))),
-                    Cons(x, s) => {
-                        let x = x.clone();
-                        let s = s.clone();
-                        Stream(Susp::new(Box::new(move || Cons(x, s.get().take(n - 1)))))
-                    }
+        lazy!(if n > 0 {
+            match &*s.0.get() {
+                Nil => Stream(lazy!(Nil)),
+                Cons(x, s) => {
+                    let x = x.clone();
+                    let s = s.clone();
+                    Stream(lazy!(Cons(x, s.get().take(n - 1))))
                 }
-            } else {
-                Stream(Susp::new(Box::new(|| Nil)))
             }
-        }))
+        } else {
+            Stream(lazy!(Nil))
+        })
     }
 
     fn drop(&self, n: usize) -> Susp<Self> {
-        let s = self.clone();
-        Susp::new(Box::new(move || {
-            if n > 0 {
+        fn rec_drop<T: 'static>(s: &Stream<T>, m: usize) -> Stream<T> {
+            if m > 0 {
                 match &*s.0.get() {
-                    Nil => Stream(Susp::new(Box::new(|| Nil))),
-                    Cons(_, s) => {
-                        let s = s.clone();
-                        (&*(&*s.get()).drop(n - 1).get()).clone()
-                    }
+                    Nil => Stream(lazy!(Nil)),
+                    Cons(_, t) => rec_drop(&*t.get(), m - 1),
                 }
             } else {
-                s
+                s.clone()
             }
-        }))
+        }
+
+        let s = self.clone();
+        lazy!(rec_drop(&s, n))
     }
 
     fn reverse(s: Self) -> Susp<Self> {
