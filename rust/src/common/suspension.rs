@@ -4,6 +4,13 @@ use std::{
     rc::Rc,
 };
 
+#[macro_export]
+macro_rules! lazy {
+    ( $f : expr ) => {
+        Susp::new(Box::new(move || $f))
+    };
+}
+
 pub struct Susp<T>(Rc<RefCell<Inner<T>>>);
 
 enum Inner<T> {
