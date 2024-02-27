@@ -11,15 +11,6 @@ enum StreamCell<T> {
 }
 use StreamCell::*;
 
-impl<T> Clone for StreamCell<T> {
-    fn clone(&self) -> Self {
-        match self {
-            Nil => Nil,
-            Cons(x, t) => Cons(x.clone(), t.clone()),
-        }
-    }
-}
-
 impl<T: Display> Display for StreamCell<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
