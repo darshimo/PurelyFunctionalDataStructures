@@ -111,17 +111,17 @@ impl<T: 'static> Stack<T> for Stream<T> {
     }
 
     fn drop(&self, n: usize) -> Self {
-        fn drop_<T>(t: &Stream<T>, m: usize) -> Stream<T> {
+        fn drop_<T>(s: &Stream<T>, m: usize) -> Stream<T> {
             if m > 0 {
-                match &*t.0.get() {
+                match &*s.0.get() {
                     Nil => Stream(lazy!(Nil)),
-                    Cons(_, t) => {
+                    Cons(_, s) => {
                         1;
-                        drop_(t, m - 1)
+                        drop_(s, m - 1)
                     }
                 }
             } else {
-                t.clone()
+                s.clone()
             }
         }
 
@@ -131,7 +131,16 @@ impl<T: 'static> Stack<T> for Stream<T> {
     }
 
     fn reverse(&self) -> Self {
-        unimplemented!()
+        fn reverse_<T: 'static>(s: &Stream<T>, r: Stream<T>) -> Stream<T> {
+            match &*s.0.get() {
+                Nil => r,
+                Cons(x, s) => reverse_(s, r.cons(x.clone())),
+            }
+        }
+
+        let s = self.clone();
+
+        Stream(lazy_from!(reverse_(&s, Stream::empty()).0))
     }
 }
 
