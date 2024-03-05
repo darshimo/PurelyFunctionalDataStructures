@@ -22,16 +22,16 @@ impl<T> Stack<T> for CustomStack<T> {
         }
     }
 
+    fn cons(&self, x: T) -> Self {
+        CustomStack(Rc::new(Cons(Rc::new(x), CustomStack(self.0.clone()))))
+    }
+
     fn head(&self) -> Rc<T> {
         if let Cons(x, _) = &*self.0 {
             x.clone()
         } else {
             panic!("empty stream.")
         }
-    }
-
-    fn cons(&self, x: T) -> Self {
-        CustomStack(Rc::new(Cons(Rc::new(x), CustomStack(self.0.clone()))))
     }
 
     fn tail(&self) -> Self {
