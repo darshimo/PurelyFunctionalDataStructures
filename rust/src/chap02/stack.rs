@@ -6,6 +6,6 @@ pub trait Stack<T>: Sized {
     fn is_empty(&self) -> bool;
 
     fn cons(&self, x: T) -> Self;
-    fn head(&self) -> Option<Rc<T>>;
-    fn tail(&self) -> Option<Self>;
+    fn head(&self) -> Rc<T>;
+    fn tail(&self) -> Self;
 }

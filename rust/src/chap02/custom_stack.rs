@@ -22,11 +22,11 @@ impl<T> Stack<T> for CustomStack<T> {
         }
     }
 
-    fn head(&self) -> Option<Rc<T>> {
+    fn head(&self) -> Rc<T> {
         if let Cons(x, _) = &*self.0 {
-            Some(x.clone())
+            x.clone()
         } else {
-            None
+            panic!("empty stream.")
         }
     }
 
@@ -34,10 +34,10 @@ impl<T> Stack<T> for CustomStack<T> {
         CustomStack(Rc::new(Cons(Rc::new(x), CustomStack(self.0.clone()))))
     }
 
-    fn tail(&self) -> Option<Self> {
+    fn tail(&self) -> Self {
         match &*self.0 {
-            Cons(_, t) => Some(CustomStack(t.0.clone())),
-            Nil => None,
+            Cons(_, t) => CustomStack(t.0.clone()),
+            Nil => panic!("empty stream."),
         }
     }
 }
