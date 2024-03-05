@@ -11,6 +11,15 @@ enum StreamCell<T> {
 }
 use StreamCell::*;
 
+impl<T> Clone for StreamCell<T> {
+    fn clone(&self) -> Self {
+        match self {
+            Nil => Nil,
+            Cons(x, t) => Cons(x.clone(), t.clone()),
+        }
+    }
+}
+
 impl<T: Display> Display for StreamCell<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -40,7 +49,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
     fn is_empty(&self) -> Susp<bool> {
         let s = self.clone();
 
-        lazy!(match &*s.0.get() {
+        lazy!(match s.0.get() {
             Nil => true,
             Cons(_, _) => false,
         })
@@ -55,7 +64,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
     fn head(&self) -> Susp<Rc<T>> {
         let s = self.clone();
 
-        lazy!(match &*s.0.get() {
+        lazy!(match s.0.get() {
             Nil => panic!("empty stream."),
             Cons(x, _) => x.clone(),
         })
@@ -64,7 +73,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
     fn tail(&self) -> Self {
         let s = self.clone();
 
-        Stream(lazy_from!(match &*s.0.get() {
+        Stream(lazy_from!(match s.0.get() {
             Nil => panic!("empty stream."),
             Cons(_, t) => t.0.clone(),
         }))
@@ -74,7 +83,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
         let s = self.clone();
         let t = t.clone();
 
-        Stream(lazy_from!(match &*s.0.get() {
+        Stream(lazy_from!(match s.0.get() {
             Nil => t.0,
             Cons(x, s) => {
                 let x = x.clone();
@@ -88,7 +97,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
         let s = self.clone();
 
         Stream(lazy_from!(if n > 0 {
-            match &*s.0.get() {
+            match s.0.get() {
                 Nil => lazy!(Nil),
                 Cons(x, s) => {
                     let x = x.clone();
@@ -102,9 +111,9 @@ impl<T: 'static> Stack<T> for Stream<T> {
     }
 
     fn drop(&self, n: usize) -> Self {
-        fn drop_<T>(s: &Stream<T>, m: usize) -> Stream<T> {
+        fn drop_<T>(s: Stream<T>, m: usize) -> Stream<T> {
             if m > 0 {
-                match &*s.0.get() {
+                match s.0.get() {
                     Nil => Stream(lazy!(Nil)),
                     Cons(_, s) => {
                         1;
@@ -118,12 +127,12 @@ impl<T: 'static> Stack<T> for Stream<T> {
 
         let s = self.clone();
 
-        Stream(lazy_from!(drop_(&s, n).0))
+        Stream(lazy_from!(drop_(s, n).0))
     }
 
     fn reverse(&self) -> Self {
-        fn reverse_<T: 'static>(s: &Stream<T>, r: Stream<T>) -> Stream<T> {
-            match &*s.0.get() {
+        fn reverse_<T: 'static>(s: Stream<T>, r: Stream<T>) -> Stream<T> {
+            match s.0.get() {
                 Nil => r,
                 Cons(x, s) => reverse_(s, r.cons(x.clone())),
             }
@@ -131,7 +140,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
 
         let s = self.clone();
 
-        Stream(lazy_from!(reverse_(&s, Stream::empty()).0))
+        Stream(lazy_from!(reverse_(s, Stream::empty()).0))
     }
 }
 

@@ -22,7 +22,7 @@ pub struct Susp<T>(Rc<RefCell<Inner<T>>>);
 
 enum Inner<T> {
     Fun(Box<dyn FnOnce() -> T>),
-    Val(Rc<T>),
+    Val(T),
     Tmp(Box<dyn FnOnce() -> Susp<T>>),
 }
 use Inner::*;
@@ -32,10 +32,13 @@ impl<T> Susp<T> {
         Susp(Rc::new(RefCell::new(Fun(f))))
     }
 
-    pub fn get(&self) -> Rc<T> {
+    pub fn get(&self) -> T
+    where
+        T: Clone,
+    {
         let ret = match self.0.replace(Fun(Box::new(|| unreachable!()))) {
-            Fun(f) => Rc::new(f()),
-            Val(x) => x,
+            Fun(f) => f(),
+            Val(x) => x.clone(),
             Tmp(f) => f().get(),
         };
 
