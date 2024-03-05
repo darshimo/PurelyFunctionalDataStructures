@@ -1,7 +1,7 @@
 use crate::{lazy, lazy_from};
 
 use super::{stack::Stack, suspension::Susp};
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 struct Stream<T>(Susp<StreamCell<T>>);
 
@@ -29,6 +29,15 @@ impl<T: Display> Display for StreamCell<T> {
     }
 }
 
+impl<T: Debug> Debug for StreamCell<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Nil => write!(f, "[]"),
+            Cons(x, t) => write!(f, "({:?}) :: {:?}", x, t),
+        }
+    }
+}
+
 impl<T> Clone for Stream<T> {
     fn clone(&self) -> Self {
         Stream(self.0.clone())
@@ -38,6 +47,12 @@ impl<T> Clone for Stream<T> {
 impl<T: Display> Display for Stream<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl<T: Debug> Debug for Stream<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
 
@@ -190,5 +205,44 @@ mod tests {
         println!("{:?}", t.head().get());
         println!("{}", s);
         println!("{}", t);
+    }
+
+    #[derive(Debug)]
+    struct U32(u32);
+    impl Clone for U32 {
+        fn clone(&self) -> Self {
+            println!("clone: {}!", self.0);
+            let mut _i = 0u64;
+            for _ in 0..50000000u64 {
+                _i += 1;
+            }
+            U32(self.0)
+        }
+    }
+
+    #[test]
+    fn test_stream_heavy() {
+        let n = Stream::<U32>::empty();
+        let s = n.cons(U32(3));
+        let s = s.cons(U32(2));
+        let s = s.cons(U32(1));
+        let s = s.take(3);
+
+        println!("s : {:?}", s);
+        let _ = s.tail().tail().tail().is_empty().get();
+        println!("s : {:?}", s);
+    }
+
+    #[test]
+    fn test_stream_heavy_rc() {
+        let n = Stream::<Rc<U32>>::empty();
+        let s = n.cons(Rc::new(U32(3)));
+        let s = s.cons(Rc::new(U32(2)));
+        let s = s.cons(Rc::new(U32(1)));
+        let s = s.take(3);
+
+        println!("s : {:?}", s);
+        let _ = s.tail().tail().tail().is_empty().get();
+        println!("s : {:?}", s);
     }
 }
