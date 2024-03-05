@@ -1,7 +1,7 @@
 use super::super::common::suspension::Susp;
 
 // 図2.1
-pub trait Stack<T>: Sized {
+pub trait Stack<T> {
     fn empty() -> Self;
     fn is_empty(&self) -> Susp<bool>;
 
