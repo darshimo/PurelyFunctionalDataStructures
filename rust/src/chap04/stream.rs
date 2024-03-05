@@ -1,6 +1,7 @@
 use crate::{lazy, lazy_from};
 
-use super::{stack::Stack, suspension::Susp};
+use super::super::common::suspension::Susp;
+use super::stack::Stack;
 use std::fmt::{Debug, Display};
 
 struct Stream<T>(Susp<StreamCell<T>>);

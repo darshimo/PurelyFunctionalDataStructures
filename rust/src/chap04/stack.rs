@@ -1,4 +1,4 @@
-use super::suspension::Susp;
+use super::super::common::suspension::Susp;
 
 // 図2.1
 pub trait Stack<T>: Sized {
