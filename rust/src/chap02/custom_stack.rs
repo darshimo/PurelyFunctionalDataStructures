@@ -6,11 +6,11 @@ use super::stack::Stack;
 pub struct CustomStack<T>(Rc<CustomStackCell<T>>);
 enum CustomStackCell<T> {
     Nil,
-    Cons(Rc<T>, CustomStack<T>),
+    Cons(T, CustomStack<T>),
 }
 use CustomStackCell::*;
 
-impl<T> Stack<T> for CustomStack<T> {
+impl<T: Clone> Stack<T> for CustomStack<T> {
     fn empty() -> Self {
         Self(Rc::new(Nil))
     }
@@ -23,10 +23,10 @@ impl<T> Stack<T> for CustomStack<T> {
     }
 
     fn cons(&self, x: T) -> Self {
-        CustomStack(Rc::new(Cons(Rc::new(x), CustomStack(self.0.clone()))))
+        CustomStack(Rc::new(Cons(x, CustomStack(self.0.clone()))))
     }
 
-    fn head(&self) -> Rc<T> {
+    fn head(&self) -> T {
         if let Cons(x, _) = &*self.0 {
             x.clone()
         } else {
