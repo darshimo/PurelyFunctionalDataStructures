@@ -1,17 +1,17 @@
 use crate::{lazy, lazy_from};
 
 use super::{stack::Stack, suspension::Susp};
-use std::{fmt::Display, rc::Rc};
+use std::fmt::Display;
 
 struct Stream<T>(Susp<StreamCell<T>>);
 
 enum StreamCell<T> {
     Nil,
-    Cons(Rc<T>, Stream<T>),
+    Cons(T, Stream<T>),
 }
 use StreamCell::*;
 
-impl<T> Clone for StreamCell<T> {
+impl<T: Clone> Clone for StreamCell<T> {
     fn clone(&self) -> Self {
         match self {
             Nil => Nil,
@@ -41,7 +41,7 @@ impl<T: Display> Display for Stream<T> {
     }
 }
 
-impl<T: 'static> Stack<T> for Stream<T> {
+impl<T: 'static + Clone> Stack<T> for Stream<T> {
     fn empty() -> Self {
         Stream(lazy!(Nil))
     }
@@ -55,13 +55,13 @@ impl<T: 'static> Stack<T> for Stream<T> {
         })
     }
 
-    fn cons(&self, x: Rc<T>) -> Self {
+    fn cons(&self, x: T) -> Self {
         let s = self.clone();
 
         Stream(lazy!(Cons(x, s)))
     }
 
-    fn head(&self) -> Susp<Rc<T>> {
+    fn head(&self) -> Susp<T> {
         let s = self.clone();
 
         lazy!(match s.0.get() {
@@ -111,7 +111,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
     }
 
     fn drop(&self, n: usize) -> Self {
-        fn drop_<T>(s: Stream<T>, m: usize) -> Stream<T> {
+        fn drop_<T: Clone>(s: Stream<T>, m: usize) -> Stream<T> {
             if m > 0 {
                 match s.0.get() {
                     Nil => Stream(lazy!(Nil)),
@@ -131,7 +131,7 @@ impl<T: 'static> Stack<T> for Stream<T> {
     }
 
     fn reverse(&self) -> Self {
-        fn reverse_<T: 'static>(s: Stream<T>, r: Stream<T>) -> Stream<T> {
+        fn reverse_<T: 'static + Clone>(s: Stream<T>, r: Stream<T>) -> Stream<T> {
             match s.0.get() {
                 Nil => r,
                 Cons(x, s) => reverse_(s, r.cons(x.clone())),
@@ -151,16 +151,16 @@ mod tests {
 
     #[test]
     fn test_stream() {
-        let n = Stream::empty();
-        let s1 = n.cons(Rc::new(3));
-        let s2 = Stream::empty().cons(Rc::new(s1.clone()));
+        let n = Stream::<u32>::empty();
+        let s1 = n.cons(3);
+        let s2 = Stream::empty().cons(s1.clone());
 
         println!("n : {}", n);
         println!("s1: {}", s1);
         println!("s2: {}", s2);
 
         println!();
-        let x = &*s2.head().get();
+        let x = s2.head().get();
         println!("{}", x);
         println!("n : {}", n);
         println!("s1: {}", s1);
@@ -179,12 +179,12 @@ mod tests {
         println!("s2: {}", s2);
 
         println!();
-        let n = Stream::empty();
-        let s = n.cons(Rc::new(5));
-        let s = s.cons(Rc::new(4));
-        let s = s.cons(Rc::new(3));
-        let s = s.cons(Rc::new(2));
-        let s = s.cons(Rc::new(1));
+        let n = Stream::<u32>::empty();
+        let s = n.cons(5);
+        let s = s.cons(4);
+        let s = s.cons(3);
+        let s = s.cons(2);
+        let s = s.cons(1);
         let t = s.drop(2);
         println!("{}", s);
         println!("{:?}", t.head().get());
