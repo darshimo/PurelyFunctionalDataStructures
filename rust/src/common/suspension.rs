@@ -62,7 +62,7 @@ impl<T: Debug> Debug for Susp<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &*self.0.borrow() {
             Val(x) => {
-                write!(f, "{:?}", x)
+                write!(f, "Susp {{ {:?} }}", x)
             }
             _ => {
                 write!(f, "<LazyFun>")
