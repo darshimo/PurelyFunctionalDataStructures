@@ -1,3 +1,4 @@
+mod chap02;
 mod chap04;
 mod common;
 
