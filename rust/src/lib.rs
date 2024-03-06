@@ -1,3 +1,4 @@
+mod chap02;
 mod common;
 
 pub fn add(left: usize, right: usize) -> usize {
