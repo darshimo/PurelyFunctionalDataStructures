@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use super::stack::Stack;
+use super::super::common::stack::Stack;
 
 pub struct CustomStack<T>(Rc<CustomStackCell<T>>);
 enum CustomStackCell<T> {

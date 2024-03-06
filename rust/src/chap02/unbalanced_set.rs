@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use super::{ordered::Ordered, set::Set};
+use super::super::common::{ordered::Ordered, set::Set};
 
 struct UnbalancedSet<T>(Rc<UnbalancedSetCell<T>>);
 enum UnbalancedSetCell<T> {
