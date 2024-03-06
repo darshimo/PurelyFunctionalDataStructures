@@ -160,11 +160,50 @@ impl<T: 'static + Clone> crate::common::stream::Stream<T> for Stream<T> {
     }
 }
 
+pub mod impl_sort {
+    use super::StreamCell::*;
+    use crate::{
+        common::{ordered::Ordered, stream::Stream, suspension::Susp},
+        lazy_from,
+    };
+
+    impl<T: 'static + Clone + Ordered> super::Stream<T> {
+        // 演習問題 4.2
+        pub fn sort(&self) -> Self {
+            fn insert<T: 'static + Clone + Ordered>(s: super::Stream<T>, x: T) -> super::Stream<T> {
+                super::Stream(lazy_from!(
+                    match s.0.get() {
+                        Nil => super::Stream::empty().cons(x),
+                        Cons(y, t) => {
+                            if x.leq(&y) {
+                                s.cons(x)
+                            } else {
+                                insert(t, x).cons(y)
+                            }
+                        }
+                    }
+                    .0
+                ))
+            }
+
+            let s = self.clone();
+
+            super::Stream(lazy_from!(
+                match s.0.get() {
+                    Nil => super::Stream::empty(),
+                    Cons(x, s) => insert(s.sort(), x),
+                }
+                .0
+            ))
+        }
+    }
+}
+
 mod tests {
 
     use std::rc::Rc;
 
-    use crate::common::stream::Stream;
+    use crate::common::{ordered::Ordered, stream::Stream};
 
     #[test]
     fn test_stream() {
@@ -246,5 +285,49 @@ mod tests {
         println!("s : {:?}", s);
         let _ = s.tail().tail().tail().is_empty().get();
         println!("s : {:?}", s);
+    }
+
+    static mut COUNTER: u32 = 0;
+    #[derive(Debug, Clone)]
+    struct U64(u32);
+    impl Ordered for U64 {
+        fn eq(&self, other: &Self) -> bool {
+            unimplemented!()
+        }
+
+        fn leq(&self, other: &Self) -> bool {
+            unsafe {
+                COUNTER += 1;
+            }
+            self.0 <= other.0
+        }
+
+        fn lt(&self, other: &Self) -> bool {
+            unimplemented!()
+        }
+    }
+
+    #[test]
+    fn test_sort() {
+        let n = super::Stream::empty();
+        let mut s = n;
+        for i in 0..1000 {
+            s = s.cons(U64(i));
+        }
+
+        let mut t = s.sort();
+        for i in 0..10 {
+            unsafe {
+                println!(
+                    "{}-th element: {:?}; compare count: {:?}",
+                    i,
+                    t.head().get(),
+                    COUNTER
+                );
+
+                COUNTER = 0;
+            }
+            t = t.tail();
+        }
     }
 }
