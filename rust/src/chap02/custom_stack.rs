@@ -42,18 +42,18 @@ impl<T: Clone> Stack<T> for CustomStack<T> {
         CustomStack(Rc::new(Cons(x, CustomStack(self.0.clone()))))
     }
 
-    fn head(&self) -> T {
+    fn head(&self) -> Result<T, String> {
         if let Cons(x, _) = &*self.0 {
-            x.clone()
+            Ok(x.clone())
         } else {
-            panic!("empty stream.")
+            Err("empty stack.".to_string())
         }
     }
 
-    fn tail(&self) -> Self {
+    fn tail(&self) -> Result<Self, String> {
         match &*self.0 {
-            Cons(_, t) => CustomStack(t.0.clone()),
-            Nil => panic!("empty stream."),
+            Cons(_, t) => Ok(CustomStack(t.0.clone())),
+            Nil => Err("empty stack.".to_string()),
         }
     }
 }

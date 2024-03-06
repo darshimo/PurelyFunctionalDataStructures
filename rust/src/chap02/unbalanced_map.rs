@@ -53,16 +53,16 @@ impl<K: Ordered + Clone, V: Clone> FiniteMap<K, V> for UnbalancedMap<K, V> {
         }
     }
 
-    fn lookup(&self, key: K) -> V {
+    fn lookup(&self, key: K) -> Result<V, String> {
         match &*self.0 {
-            E => panic!("not found."),
+            E => Err("not found.".to_string()),
             T(a, key_, value_, b) => {
                 if key.lt(key_) {
                     a.lookup(key)
                 } else if key_.lt(&key) {
                     b.lookup(key)
                 } else {
-                    value_.clone()
+                    Ok(value_.clone())
                 }
             }
         }
