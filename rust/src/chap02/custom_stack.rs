@@ -1,8 +1,9 @@
+// 図2.3
+
 use std::rc::Rc;
 
 use super::stack::Stack;
 
-// 図2.3
 pub struct CustomStack<T>(Rc<CustomStackCell<T>>);
 enum CustomStackCell<T> {
     Nil,
@@ -12,7 +13,7 @@ use CustomStackCell::*;
 
 impl<T: Clone> Stack<T> for CustomStack<T> {
     fn empty() -> Self {
-        Self(Rc::new(Nil))
+        CustomStack(Rc::new(Nil))
     }
 
     fn is_empty(&self) -> bool {

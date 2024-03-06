@@ -1,4 +1,5 @@
 // 図2.1
+
 pub trait Stack<T> {
     fn empty() -> Self;
     fn is_empty(&self) -> bool;
