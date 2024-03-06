@@ -1,4 +1,4 @@
-// 図2.1
+// 図4.1
 
 use super::suspension::Susp;
 

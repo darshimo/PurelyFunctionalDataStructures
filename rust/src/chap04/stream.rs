@@ -1,3 +1,5 @@
+// 図4.1
+
 use crate::{lazy, lazy_from};
 
 use super::super::common::suspension::Susp;
