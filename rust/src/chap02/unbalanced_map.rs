@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use super::super::common::{finite_map::FiniteMap, ordered::Ordered};
+use crate::common::{finite_map::FiniteMap, ordered::Ordered};
 
 struct UnbalancedMap<K, V>(Rc<UnbalancedMapCell<K, V>>);
 

@@ -1,9 +1,8 @@
 // 図4.1
 
-use crate::{lazy, lazy_from};
-
-use super::super::common::suspension::Susp;
 use std::fmt::{Debug, Display};
+
+use crate::{common::suspension::Susp, lazy, lazy_from};
 
 struct Stream<T>(Susp<StreamCell<T>>);
 
@@ -58,7 +57,7 @@ impl<T: Debug> Debug for Stream<T> {
     }
 }
 
-impl<T: 'static + Clone> super::super::common::stream::Stream<T> for Stream<T> {
+impl<T: 'static + Clone> crate::common::stream::Stream<T> for Stream<T> {
     fn empty() -> Self {
         Stream(lazy!(Nil))
     }
@@ -162,8 +161,10 @@ impl<T: 'static + Clone> super::super::common::stream::Stream<T> for Stream<T> {
 }
 
 mod tests {
-    use super::super::super::common::stream::Stream;
+
     use std::rc::Rc;
+
+    use crate::common::stream::Stream;
 
     #[test]
     fn test_stream() {
