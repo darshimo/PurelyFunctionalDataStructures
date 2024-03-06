@@ -1,7 +1,8 @@
-use super::super::common::suspension::Susp;
-
 // 図2.1
-pub trait Stack<T> {
+
+use super::suspension::Susp;
+
+pub trait Stream<T> {
     fn empty() -> Self;
     fn is_empty(&self) -> Susp<bool>;
 

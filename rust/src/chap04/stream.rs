@@ -1,7 +1,6 @@
 use crate::{lazy, lazy_from};
 
 use super::super::common::suspension::Susp;
-use super::stack::Stack;
 use std::fmt::{Debug, Display};
 
 struct Stream<T>(Susp<StreamCell<T>>);
@@ -57,7 +56,7 @@ impl<T: Debug> Debug for Stream<T> {
     }
 }
 
-impl<T: 'static + Clone> Stack<T> for Stream<T> {
+impl<T: 'static + Clone> super::super::common::stream::Stream<T> for Stream<T> {
     fn empty() -> Self {
         Stream(lazy!(Nil))
     }
@@ -161,15 +160,14 @@ impl<T: 'static + Clone> Stack<T> for Stream<T> {
 }
 
 mod tests {
-    use crate::chap04::stack::Stack;
-    use crate::chap04::stream::Stream;
+    use super::super::super::common::stream::Stream;
     use std::rc::Rc;
 
     #[test]
     fn test_stream() {
-        let n = Stream::<u32>::empty();
+        let n = super::Stream::<u32>::empty();
         let s1 = n.cons(3);
-        let s2 = Stream::empty().cons(s1.clone());
+        let s2 = super::Stream::empty().cons(s1.clone());
 
         println!("n : {}", n);
         println!("s1: {}", s1);
@@ -195,7 +193,7 @@ mod tests {
         println!("s2: {}", s2);
 
         println!();
-        let n = Stream::<u32>::empty();
+        let n = super::Stream::<u32>::empty();
         let s = n.cons(5);
         let s = s.cons(4);
         let s = s.cons(3);
@@ -223,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_stream_heavy() {
-        let n = Stream::<U32>::empty();
+        let n = super::Stream::<U32>::empty();
         let s = n.cons(U32(3));
         let s = s.cons(U32(2));
         let s = s.cons(U32(1));
@@ -236,7 +234,7 @@ mod tests {
 
     #[test]
     fn test_stream_heavy_rc() {
-        let n = Stream::<Rc<U32>>::empty();
+        let n = super::Stream::<Rc<U32>>::empty();
         let s = n.cons(Rc::new(U32(3)));
         let s = s.cons(Rc::new(U32(2)));
         let s = s.cons(Rc::new(U32(1)));

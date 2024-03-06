@@ -1,2 +1,1 @@
-mod stack;
 mod stream;
