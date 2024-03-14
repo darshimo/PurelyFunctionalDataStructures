@@ -43,18 +43,11 @@ impl<T: Clone> Stack<T> for CustomStack<T> {
     }
 
     fn head(&self) -> Result<T, String> {
-        if let Cons(x, _) = &*self.0 {
-            Ok(x.clone())
-        } else {
-            Err("empty stack.".to_string())
-        }
+        Ok(self.get()?.0)
     }
 
     fn tail(&self) -> Result<Self, String> {
-        match &*self.0 {
-            Cons(_, t) => Ok(CustomStack(t.0.clone())),
-            Nil => Err("empty stack.".to_string()),
-        }
+        Ok(self.get()?.1)
     }
 }
 
@@ -64,6 +57,24 @@ impl<T: Clone> CustomStack<T> {
         match &*self.0 {
             Nil => CustomStack::empty().cons(self.clone()),
             Cons(_, t) => t.suffixes().cons(self.clone()),
+        }
+    }
+
+    pub fn get(&self) -> Result<(T, Self), String> {
+        if let Cons(x, t) = &*self.0 {
+            Ok((x.clone(), t.clone()))
+        } else {
+            Err("empty stack.".to_string())
+        }
+    }
+
+    pub fn map<U: Clone, F: Fn(T) -> U>(&self, f: F) -> CustomStack<U> {
+        match &*self.0 {
+            Nil => CustomStack::empty(),
+            Cons(x, t) => {
+                let y = (&f)(x.clone());
+                t.map(f).cons(y)
+            }
         }
     }
 }
@@ -76,5 +87,17 @@ mod test {
     fn test_suffixes() {
         let l = CustomStack::empty().cons(4).cons(3).cons(2).cons(1u32);
         println!("{:?}", l.suffixes());
+    }
+
+    #[test]
+    fn test_get() {
+        println!("{:?}", CustomStack::<u32>::empty().get());
+        println!("{:?}", CustomStack::empty().cons(0).get());
+    }
+
+    #[test]
+    fn test_map() {
+        let stack: CustomStack<_> = CustomStack::empty().cons(4).cons(3).cons(2).cons(1).cons(0);
+        println!("{:?}", stack.map(|x| x + 100));
     }
 }
