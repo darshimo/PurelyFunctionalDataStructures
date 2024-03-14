@@ -2,7 +2,7 @@
 
 use std::{fmt::Debug, rc::Rc};
 
-use super::super::common::stack::Stack;
+use crate::common::stack::Stack;
 
 pub struct CustomStack<T>(Rc<CustomStackCell<T>>);
 enum CustomStackCell<T> {
