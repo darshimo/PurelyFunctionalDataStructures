@@ -1,3 +1,5 @@
+// 図3.1
+
 pub trait Heap<T>: Sized {
     fn empty() -> Self;
     fn is_empty(&self) -> bool;
