@@ -2,7 +2,10 @@
 
 use std::rc::Rc;
 
-use crate::common::{heap::Heap, ordered::Ordered};
+use crate::{
+    chap02::list::List,
+    common::{heap::Heap, ordered::Ordered, stack::Stack},
+};
 
 struct LeftistHeap<T>(Rc<LeftistHeapCell<T>>);
 
@@ -31,7 +34,7 @@ impl<T: Ordered + Clone> Heap<T> for LeftistHeap<T> {
     }
 
     fn insert(&self, x: T) -> Self {
-        self.merge(&Self::from(x))
+        self.merge(&LeftistHeap(Rc::new(T(1, x, Self::empty(), Self::empty()))))
     }
 
     fn merge(&self, other: &Self) -> Self {
@@ -65,17 +68,7 @@ impl<T: Ordered + Clone> Heap<T> for LeftistHeap<T> {
 
 impl<T: Ordered + Clone> FromIterator<T> for LeftistHeap<T> {
     fn from_iter<U: IntoIterator<Item = T>>(iter: U) -> Self {
-        let mut heap_vec: Vec<LeftistHeap<T>> =
-            iter.into_iter().map(|x| LeftistHeap::from(x)).collect();
-        while heap_vec.len() > 1 {
-            heap_vec = Self::list_merge(heap_vec);
-        }
-
-        if let Some(h) = heap_vec.pop() {
-            h
-        } else {
-            Self::empty()
-        }
+        LeftistHeap::from_list(iter.into_iter().collect())
     }
 }
 
@@ -95,14 +88,10 @@ impl<T: Ordered + Clone> LeftistHeap<T> {
         }
     }
 
-    fn from(x: T) -> Self {
-        LeftistHeap(Rc::new(T(1, x, Self::empty(), Self::empty())))
-    }
-
     // 演習問題 3.2
     fn insert_without_merge(&self, x: T) -> Self {
         match &*self.0 {
-            E => Self::from(x),
+            E => LeftistHeap(Rc::new(T(1, x, Self::empty(), Self::empty()))),
             T(_, y, a, b) => {
                 if x.leq(y) {
                     Self::make_t(&x, a, &b.insert_without_merge(y.clone()))
@@ -114,23 +103,27 @@ impl<T: Ordered + Clone> LeftistHeap<T> {
     }
 
     // 演習問題 3.3
-    fn from_list(v: Vec<T>) -> Self {
-        v.into_iter().collect()
+    fn from_list(l: List<T>) -> Self {
+        let mut heap_list: List<_> = l.map(|x| LeftistHeap::empty().insert(x));
+
+        while heap_list.len() > 1 {
+            heap_list = Self::list_merge(heap_list);
+        }
+
+        if let Ok(h) = heap_list.head() {
+            h
+        } else {
+            Self::empty()
+        }
     }
 
-    fn list_merge(mut v: Vec<LeftistHeap<T>>) -> Vec<LeftistHeap<T>> {
-        match (v.pop(), v.pop()) {
-            (Some(h1), Some(h2)) => {
-                let mut ret = Self::list_merge(v);
-                ret.push(h1.merge(&h2));
-                ret
-            }
-            (Some(h1), None) => {
-                let mut ret = Self::list_merge(v);
-                ret.push(h1);
-                ret
-            }
-            _ => vec![],
+    fn list_merge(l: List<LeftistHeap<T>>) -> List<LeftistHeap<T>> {
+        match l.get() {
+            Ok((h1, l1)) => match l1.get() {
+                Ok((h2, l2)) => Self::list_merge(l2).cons(h1.merge(&h2)),
+                Err(_) => l,
+            },
+            Err(_) => l,
         }
     }
 }
@@ -157,13 +150,28 @@ mod test {
     }
 
     #[test]
-    fn f() {
+    fn test_from_list() {
         let mut h = LeftistHeap::from_list(
             [1, 6, 4, 5, 8, 3, 1, 9, 9, 7, 2, 0]
                 .into_iter()
                 .map(|n| U32(n))
                 .collect(),
         );
+
+        let mut v = vec![];
+        while !h.is_empty() {
+            v.push(h.find_min().unwrap().0);
+            h = h.delete_min().unwrap();
+        }
+        println!("{:?}", v);
+    }
+
+    #[test]
+    fn test_from_iter() {
+        let mut h: LeftistHeap<_> = [1, 6, 4, 5, 8, 3, 1, 9, 9, 7, 2, 0]
+            .into_iter()
+            .map(|n| U32(n))
+            .collect();
 
         let mut v = vec![];
         while !h.is_empty() {

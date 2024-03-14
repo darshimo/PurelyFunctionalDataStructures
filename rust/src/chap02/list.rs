@@ -4,7 +4,7 @@ use crate::common::stack::Stack;
 
 use super::custom_stack::CustomStack;
 
-struct List<T>(usize, CustomStack<T>);
+pub struct List<T>(usize, CustomStack<T>);
 
 impl<T> Clone for List<T> {
     fn clone(&self) -> Self {
@@ -51,16 +51,16 @@ impl<T: Clone> Stack<T> for List<T> {
 }
 
 impl<T: Clone> List<T> {
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.0
     }
 
-    fn get(&self) -> Result<(T, List<T>), String> {
+    pub fn get(&self) -> Result<(T, List<T>), String> {
         let (x, t) = self.1.get().map_err(|_| "empty list.")?;
         Ok((x, List(self.0 - 1, t)))
     }
 
-    fn map<U: Clone, F: Fn(T) -> U>(&self, f: F) -> List<U> {
+    pub fn map<U: Clone, F: Fn(T) -> U>(&self, f: F) -> List<U> {
         List(self.0, self.1.map(f))
     }
 }
