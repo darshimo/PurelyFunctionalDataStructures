@@ -144,6 +144,48 @@ impl<T: Ordered + Clone> WeightBiasedLeftistHeap<T> {
             Err(_) => l,
         }
     }
+
+    fn merge_top_down(&self, other: &Self) -> Self {
+        match (&*self.0, &*other.0) {
+            (_, E) => self.clone(),
+            (E, _) => other.clone(),
+            (T(r1, x, a1, b1), T(r2, y, a2, b2)) => {
+                if x.leq(y) {
+                    if a1.rank() >= b1.rank() + other.rank() {
+                        WeightBiasedLeftistHeap(Rc::new(T(
+                            r1 + r2,
+                            x.clone(),
+                            a1.clone(),
+                            b1.merge_top_down(other),
+                        )))
+                    } else {
+                        WeightBiasedLeftistHeap(Rc::new(T(
+                            r1 + r2,
+                            x.clone(),
+                            b1.merge_top_down(other),
+                            a1.clone(),
+                        )))
+                    }
+                } else {
+                    if a2.rank() >= self.rank() + b2.rank() {
+                        WeightBiasedLeftistHeap(Rc::new(T(
+                            r1 + r2,
+                            y.clone(),
+                            a2.clone(),
+                            self.merge_top_down(b2),
+                        )))
+                    } else {
+                        WeightBiasedLeftistHeap(Rc::new(T(
+                            r1 + r2,
+                            y.clone(),
+                            self.merge_top_down(b2),
+                            a2.clone(),
+                        )))
+                    }
+                }
+            }
+        }
+    }
 }
 
 mod test {
