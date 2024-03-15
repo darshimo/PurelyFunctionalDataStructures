@@ -74,6 +74,17 @@ impl<T: Clone> List<T> {
 
         reverse_(self, &List::empty())
     }
+
+    pub fn enumerate(&self) -> List<(usize, T)> {
+        fn enumerate_<T: Clone>(i: usize, l: &List<T>) -> List<(usize, T)> {
+            match l.get() {
+                Ok((x, t)) => enumerate_(i + 1, &t).cons((i, x)),
+                Err(_) => List::empty(),
+            }
+        }
+
+        enumerate_(0, self)
+    }
 }
 
 mod test {
@@ -99,6 +110,16 @@ mod test {
     #[test]
     fn test_map() {
         let l = (0..10).collect::<List<u32>>().map(|x| x + 100);
+        println!("{}", l.len());
+        println!("{:?}", l);
+    }
+
+    #[test]
+    fn test_enumerate() {
+        let l = [2, 4, 7, 3, 7, 8, 3, 45, 6]
+            .into_iter()
+            .collect::<List<u32>>()
+            .enumerate();
         println!("{}", l.len());
         println!("{:?}", l);
     }
