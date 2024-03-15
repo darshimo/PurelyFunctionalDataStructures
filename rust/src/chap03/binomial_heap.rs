@@ -1,3 +1,5 @@
+// 図3.4
+
 use crate::{
     chap02::list::List,
     common::{heap::Heap, ordered::Ordered, stack::Stack},
