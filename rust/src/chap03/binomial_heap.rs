@@ -79,6 +79,17 @@ impl<T: Ordered + Clone> BinomialHeap<T> {
             Err(_) => Ok((t, BinomialHeap::empty())),
         }
     }
+
+    // 演習問題 3.5
+    fn find_min_directly(&self) -> Result<T, String> {
+        let (t, ts) = self.0.get().map_err(|_| "empty heap.")?;
+        let x = t.root();
+
+        match BinomialHeap(ts).find_min_directly() {
+            Ok(y) => Ok(if x.leq(&y) { x } else { y }),
+            Err(_) => Ok(x),
+        }
+    }
 }
 
 impl<T: Ordered + Clone> Tree<T> {
