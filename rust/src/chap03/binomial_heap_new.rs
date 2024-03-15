@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-struct BinomialHeap<T>(List<(usize, Tree<T>)>);
+pub struct BinomialHeap<T>(List<(usize, Tree<T>)>);
 
 #[derive(Clone)]
 struct Tree<T>(T, List<Tree<T>>);
