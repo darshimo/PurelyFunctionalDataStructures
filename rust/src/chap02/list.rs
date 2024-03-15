@@ -63,6 +63,17 @@ impl<T: Clone> List<T> {
     pub fn map<U: Clone, F: Fn(T) -> U>(&self, f: F) -> List<U> {
         List(self.0, self.1.map(f))
     }
+
+    pub fn reverse(&self) -> Self {
+        fn reverse_<T: Clone>(l1: &List<T>, l2: &List<T>) -> List<T> {
+            match l1.get() {
+                Ok((x, t)) => reverse_(&t, &l2.cons(x)),
+                Err(_) => l2.clone(),
+            }
+        }
+
+        reverse_(self, &List::empty())
+    }
 }
 
 mod test {
