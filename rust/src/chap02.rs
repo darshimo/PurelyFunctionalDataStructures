@@ -1,4 +1,4 @@
 mod custom_stack;
-mod list;
+pub mod list;
 mod unbalanced_map;
 mod unbalanced_set;
