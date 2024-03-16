@@ -26,27 +26,59 @@ impl<T: Ordered + Clone> Set<T> for RedBlackTree<T> {
     }
 
     fn insert(&self, x: T) -> Self {
-        fn ins<T: Ordered + Clone>(s: &RedBlackTree<T>, x: T) -> RedBlackTree<T> {
+        enum Route {
+            Left,
+            Right,
+            Neither,
+        }
+        use Route::*;
+
+        fn ins<T: Ordered + Clone>(s: &RedBlackTree<T>, x: T) -> (RedBlackTree<T>, Route) {
             match &*s.0 {
-                E => RedBlackTree(Rc::new(T(
-                    R,
-                    RedBlackTree::empty(),
-                    x,
-                    RedBlackTree::empty(),
-                ))),
+                E => (
+                    RedBlackTree(Rc::new(T(
+                        R,
+                        RedBlackTree::empty(),
+                        x,
+                        RedBlackTree::empty(),
+                    ))),
+                    Neither,
+                ),
                 T(color, a, y, b) => {
                     if x.lt(y) {
-                        RedBlackTree(Rc::new(T(*color, ins(a, x), y.clone(), b.clone()))).lbalance()
+                        let (a_with_x, route) = ins(a, x);
+
+                        let s_with_x =
+                            RedBlackTree(Rc::new(T(*color, a_with_x, y.clone(), b.clone())));
+
+                        let s_with_x_balanced = match route {
+                            Left => s_with_x.llbalance(),
+                            Right => s_with_x.lrbalance(),
+                            Neither => s_with_x,
+                        };
+
+                        (s_with_x_balanced, Left)
                     } else if y.lt(&x) {
-                        RedBlackTree(Rc::new(T(*color, a.clone(), y.clone(), ins(b, x)))).rbalance()
+                        let (b_with_x, route) = ins(b, x);
+
+                        let s_with_x =
+                            RedBlackTree(Rc::new(T(*color, a.clone(), y.clone(), b_with_x)));
+
+                        let s_with_x_balanced = match route {
+                            Left => s_with_x.rlbalance(),
+                            Right => s_with_x.rrbalance(),
+                            Neither => s_with_x,
+                        };
+
+                        (s_with_x_balanced, Right)
                     } else {
-                        s.clone()
+                        (s.clone(), Neither)
                     }
                 }
             }
         }
 
-        match &*ins(self, x).0 {
+        match &*ins(self, x).0 .0 {
             T(_, a, y, b) => RedBlackTree(Rc::new(T(B, a.clone(), y.clone(), b.clone()))),
             E => unreachable!(),
         }
@@ -171,6 +203,67 @@ impl<T: Ordered + Clone> RedBlackTree<T> {
                     return t;
                 }
 
+                if let T(R, e, z, f) = &*d.0 {
+                    let l = RedBlackTree(Rc::new(T(B, a.clone(), x.clone(), c.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, e.clone(), z.clone(), f.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, y.clone(), r)));
+                    return t;
+                }
+            }
+        }
+
+        self.clone()
+    }
+
+    // 演習問題 3.10(b)
+    fn llbalance(&self) -> Self {
+        if let T(B, a, x, b) = &*self.0 {
+            if let T(R, c, y, d) = &*a.0 {
+                if let T(R, e, z, f) = &*c.0 {
+                    let l = RedBlackTree(Rc::new(T(B, e.clone(), z.clone(), f.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, d.clone(), x.clone(), b.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, y.clone(), r)));
+                    return t;
+                }
+            }
+        }
+
+        self.clone()
+    }
+
+    fn lrbalance(&self) -> Self {
+        if let T(B, a, x, b) = &*self.0 {
+            if let T(R, c, y, d) = &*a.0 {
+                if let T(R, e, z, f) = &*d.0 {
+                    let l = RedBlackTree(Rc::new(T(B, c.clone(), y.clone(), e.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, f.clone(), x.clone(), b.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, z.clone(), r)));
+                    return t;
+                }
+            }
+        }
+
+        self.clone()
+    }
+
+    fn rlbalance(&self) -> Self {
+        if let T(B, a, x, b) = &*self.0 {
+            if let T(R, c, y, d) = &*b.0 {
+                if let T(R, e, z, f) = &*c.0 {
+                    let l = RedBlackTree(Rc::new(T(B, a.clone(), x.clone(), e.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, f.clone(), y.clone(), d.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, z.clone(), r)));
+                    return t;
+                }
+            }
+        }
+
+        self.clone()
+    }
+
+    fn rrbalance(&self) -> Self {
+        if let T(B, a, x, b) = &*self.0 {
+            if let T(R, c, y, d) = &*b.0 {
                 if let T(R, e, z, f) = &*d.0 {
                     let l = RedBlackTree(Rc::new(T(B, a.clone(), x.clone(), c.clone())));
                     let r = RedBlackTree(Rc::new(T(B, e.clone(), z.clone(), f.clone())));
