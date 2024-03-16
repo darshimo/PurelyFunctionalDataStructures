@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::common::{ordered::Ordered, set::Set};
+use crate::{
+    chap02::list::List,
+    common::{ordered::Ordered, set::Set},
+};
 
 #[derive(Clone, Copy)]
 enum Color {
@@ -102,6 +105,37 @@ impl<T: Ordered + Clone> RedBlackTree<T> {
         }
 
         self.clone()
+    }
+
+    // 演習問題 3.9
+    fn from_ord_list(l: List<T>) -> Self {
+        fn inner<T: Ordered + Clone>(
+            l: List<T>,
+            n: usize,
+            d: usize,
+            m: usize,
+        ) -> (RedBlackTree<T>, List<T>) {
+            if n == 0 {
+                return (RedBlackTree::empty(), l);
+            }
+
+            let left_size = (n - 1) / 2;
+            let right_size = (n - 1) - left_size;
+
+            let (left, l) = inner(l, left_size, d + 1, m);
+            let (x, l) = l.get().unwrap();
+            let (right, l) = inner(l, right_size, d + 1, m);
+
+            (
+                RedBlackTree(Rc::new(T(if d < m { B } else { R }, left, x, right))),
+                l,
+            )
+        }
+
+        let n = l.len();
+        let m = (n as f32).log2() as usize;
+
+        inner(l, n, 0, m).0
     }
 }
 
