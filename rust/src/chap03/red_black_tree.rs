@@ -36,9 +36,9 @@ impl<T: Ordered + Clone> Set<T> for RedBlackTree<T> {
                 ))),
                 T(color, a, y, b) => {
                     if x.lt(y) {
-                        RedBlackTree(Rc::new(T(*color, ins(a, x), y.clone(), b.clone()))).balance()
+                        RedBlackTree(Rc::new(T(*color, ins(a, x), y.clone(), b.clone()))).lbalance()
                     } else if y.lt(&x) {
-                        RedBlackTree(Rc::new(T(*color, a.clone(), y.clone(), ins(b, x)))).balance()
+                        RedBlackTree(Rc::new(T(*color, a.clone(), y.clone(), ins(b, x)))).rbalance()
                     } else {
                         s.clone()
                     }
@@ -136,6 +136,51 @@ impl<T: Ordered + Clone> RedBlackTree<T> {
         let m = (n as f32).log2() as usize;
 
         inner(l, n, 0, m).0
+    }
+
+    // 演習問題 3.10(a)
+    fn lbalance(&self) -> Self {
+        if let T(B, a, x, b) = &*self.0 {
+            if let T(R, c, y, d) = &*a.0 {
+                if let T(R, e, z, f) = &*c.0 {
+                    let l = RedBlackTree(Rc::new(T(B, e.clone(), z.clone(), f.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, d.clone(), x.clone(), b.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, y.clone(), r)));
+                    return t;
+                }
+
+                if let T(R, e, z, f) = &*d.0 {
+                    let l = RedBlackTree(Rc::new(T(B, c.clone(), y.clone(), e.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, f.clone(), x.clone(), b.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, z.clone(), r)));
+                    return t;
+                }
+            }
+        }
+
+        self.clone()
+    }
+
+    fn rbalance(&self) -> Self {
+        if let T(B, a, x, b) = &*self.0 {
+            if let T(R, c, y, d) = &*b.0 {
+                if let T(R, e, z, f) = &*c.0 {
+                    let l = RedBlackTree(Rc::new(T(B, a.clone(), x.clone(), e.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, f.clone(), y.clone(), d.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, z.clone(), r)));
+                    return t;
+                }
+
+                if let T(R, e, z, f) = &*d.0 {
+                    let l = RedBlackTree(Rc::new(T(B, a.clone(), x.clone(), c.clone())));
+                    let r = RedBlackTree(Rc::new(T(B, e.clone(), z.clone(), f.clone())));
+                    let t = RedBlackTree(Rc::new(T(R, l, y.clone(), r)));
+                    return t;
+                }
+            }
+        }
+
+        self.clone()
     }
 }
 
