@@ -2,7 +2,10 @@
 
 use std::fmt::{Debug, Display};
 
-use crate::{common::suspension::Susp, lazy, lazy_from};
+use crate::{
+    common::{stream::Stream as StreamTrait, suspension::Susp},
+    lazy, lazy_from,
+};
 
 struct Stream<T>(Susp<StreamCell<T>>);
 
@@ -57,7 +60,7 @@ impl<T: Debug> Debug for Stream<T> {
     }
 }
 
-impl<T: 'static + Clone> crate::common::stream::Stream<T> for Stream<T> {
+impl<T: 'static + Clone> StreamTrait<T> for Stream<T> {
     fn empty() -> Self {
         Stream(lazy!(Nil))
     }
@@ -161,19 +164,19 @@ impl<T: 'static + Clone> crate::common::stream::Stream<T> for Stream<T> {
 }
 
 pub mod impl_sort {
-    use super::StreamCell::*;
+    use super::{Stream, StreamCell::*};
     use crate::{
-        common::{ordered::Ordered, stream::Stream, suspension::Susp},
+        common::{ordered::Ordered, stream::Stream as Streamtrait, suspension::Susp},
         lazy_from,
     };
 
-    impl<T: 'static + Clone + Ordered> super::Stream<T> {
+    impl<T: 'static + Clone + Ordered> Stream<T> {
         // 演習問題 4.2
         pub fn sort(&self) -> Self {
-            fn insert<T: 'static + Clone + Ordered>(s: super::Stream<T>, x: T) -> super::Stream<T> {
-                super::Stream(lazy_from!(
+            fn insert<T: 'static + Clone + Ordered>(s: Stream<T>, x: T) -> Stream<T> {
+                Stream(lazy_from!(
                     match s.0.get() {
-                        Nil => super::Stream::empty().cons(x),
+                        Nil => Stream::empty().cons(x),
                         Cons(y, t) => {
                             if x.leq(&y) {
                                 s.cons(x)
@@ -188,9 +191,9 @@ pub mod impl_sort {
 
             let s = self.clone();
 
-            super::Stream(lazy_from!(
+            Stream(lazy_from!(
                 match s.0.get() {
-                    Nil => super::Stream::empty(),
+                    Nil => Stream::empty(),
                     Cons(x, s) => insert(s.sort(), x),
                 }
                 .0
@@ -203,13 +206,16 @@ mod tests {
 
     use std::rc::Rc;
 
-    use crate::common::{ordered::Ordered, stream::Stream};
+    use crate::{
+        chap04::stream::Stream,
+        common::{ordered::Ordered, stream::Stream as StreamTrait},
+    };
 
     #[test]
     fn test_stream() {
-        let n = super::Stream::<u32>::empty();
+        let n = Stream::empty();
         let s1 = n.cons(3);
-        let s2 = super::Stream::empty().cons(s1.clone());
+        let s2 = Stream::empty().cons(s1.clone());
 
         println!("n : {}", n);
         println!("s1: {}", s1);
@@ -235,7 +241,7 @@ mod tests {
         println!("s2: {}", s2);
 
         println!();
-        let n = super::Stream::<u32>::empty();
+        let n = Stream::empty();
         let s = n.cons(5);
         let s = s.cons(4);
         let s = s.cons(3);
@@ -249,24 +255,24 @@ mod tests {
     }
 
     #[derive(Debug)]
-    struct Int(u32);
-    impl Clone for Int {
+    struct U32(u32);
+    impl Clone for U32 {
         fn clone(&self) -> Self {
             println!("clone: {}!", self.0);
             let mut _i = 0u64;
             for _ in 0..50000000u64 {
                 _i += 1;
             }
-            Int(self.0)
+            U32(self.0)
         }
     }
 
     #[test]
     fn test_stream_heavy() {
-        let n = super::Stream::<Int>::empty();
-        let s = n.cons(Int(3));
-        let s = s.cons(Int(2));
-        let s = s.cons(Int(1));
+        let n = Stream::empty();
+        let s = n.cons(U32(3));
+        let s = s.cons(U32(2));
+        let s = s.cons(U32(1));
         let s = s.take(3);
 
         println!("s : {:?}", s);
@@ -276,10 +282,10 @@ mod tests {
 
     #[test]
     fn test_stream_heavy_rc() {
-        let n = super::Stream::<Rc<Int>>::empty();
-        let s = n.cons(Rc::new(Int(3)));
-        let s = s.cons(Rc::new(Int(2)));
-        let s = s.cons(Rc::new(Int(1)));
+        let n = Stream::empty();
+        let s = n.cons(Rc::new(U32(3)));
+        let s = s.cons(Rc::new(U32(2)));
+        let s = s.cons(Rc::new(U32(1)));
         let s = s.take(3);
 
         println!("s : {:?}", s);
@@ -309,7 +315,7 @@ mod tests {
 
     #[test]
     fn test_sort() {
-        let n = super::Stream::empty();
+        let n = Stream::empty();
         let mut s = n;
         for i in 0..1000 {
             s = s.cons(U64(i));
