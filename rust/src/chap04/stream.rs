@@ -249,24 +249,24 @@ mod tests {
     }
 
     #[derive(Debug)]
-    struct U32(u32);
-    impl Clone for U32 {
+    struct Int(u32);
+    impl Clone for Int {
         fn clone(&self) -> Self {
             println!("clone: {}!", self.0);
             let mut _i = 0u64;
             for _ in 0..50000000u64 {
                 _i += 1;
             }
-            U32(self.0)
+            Int(self.0)
         }
     }
 
     #[test]
     fn test_stream_heavy() {
-        let n = super::Stream::<U32>::empty();
-        let s = n.cons(U32(3));
-        let s = s.cons(U32(2));
-        let s = s.cons(U32(1));
+        let n = super::Stream::<Int>::empty();
+        let s = n.cons(Int(3));
+        let s = s.cons(Int(2));
+        let s = s.cons(Int(1));
         let s = s.take(3);
 
         println!("s : {:?}", s);
@@ -276,10 +276,10 @@ mod tests {
 
     #[test]
     fn test_stream_heavy_rc() {
-        let n = super::Stream::<Rc<U32>>::empty();
-        let s = n.cons(Rc::new(U32(3)));
-        let s = s.cons(Rc::new(U32(2)));
-        let s = s.cons(Rc::new(U32(1)));
+        let n = super::Stream::<Rc<Int>>::empty();
+        let s = n.cons(Rc::new(Int(3)));
+        let s = s.cons(Rc::new(Int(2)));
+        let s = s.cons(Rc::new(Int(1)));
         let s = s.take(3);
 
         println!("s : {:?}", s);

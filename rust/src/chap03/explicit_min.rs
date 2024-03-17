@@ -66,33 +66,16 @@ impl<T: Ordered + Clone, H: Heap<T> + Clone> Heap<T> for ExplicitMin<T, H> {
 }
 
 mod test {
-
     use crate::{
         chap03::{binomial_heap_new::BinomialHeap, explicit_min::ExplicitMin},
-        common::{heap::Heap, ordered::Ordered},
+        common::{heap::Heap, int::Int},
     };
-
-    #[derive(Clone)]
-    struct U32(u32);
-    impl Ordered for U32 {
-        fn eq(&self, other: &Self) -> bool {
-            self.0 == other.0
-        }
-
-        fn leq(&self, other: &Self) -> bool {
-            self.0 <= other.0
-        }
-
-        fn lt(&self, other: &Self) -> bool {
-            self.0 < other.0
-        }
-    }
 
     #[test]
     fn test() {
-        let mut h: ExplicitMin<U32, BinomialHeap<U32>> = ExplicitMin::empty();
+        let mut h: ExplicitMin<_, BinomialHeap<_>> = ExplicitMin::empty();
         for n in [1, 6, 4, 4, 8, 3, 6, 7, 9, 5, 4, 2, 3, 6, 4, 8, 4] {
-            h = h.insert(U32(n));
+            h = h.insert(Int(n));
         }
 
         let mut v = vec![];
@@ -106,17 +89,17 @@ mod test {
     #[test]
     fn test_merge() {
         let h1 = {
-            let mut h: ExplicitMin<U32, BinomialHeap<U32>> = ExplicitMin::empty();
+            let mut h: ExplicitMin<_, BinomialHeap<_>> = ExplicitMin::empty();
             for n in [1, 6, 4, 4, 8, 3, 6, 7, 9, 5, 4, 2, 3, 6, 4, 8, 4] {
-                h = h.insert(U32(n));
+                h = h.insert(Int(n));
             }
             h
         };
 
         let h2 = {
-            let mut h: ExplicitMin<U32, BinomialHeap<U32>> = ExplicitMin::empty();
+            let mut h: ExplicitMin<_, BinomialHeap<_>> = ExplicitMin::empty();
             for n in [7, 2, 5, 6, 8, 4, 2, 7, 3, 3, 2, 7, 2, 7, 3, 9, 8, 3, 5] {
-                h = h.insert(U32(n));
+                h = h.insert(Int(n));
             }
             h
         };

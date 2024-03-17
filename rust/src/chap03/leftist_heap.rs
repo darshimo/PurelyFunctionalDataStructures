@@ -129,32 +129,17 @@ impl<T: Ordered + Clone> LeftistHeap<T> {
 }
 
 mod test {
-    use crate::common::{heap::Heap, ordered::Ordered};
-
-    use super::LeftistHeap;
-
-    #[derive(Clone, Debug)]
-    struct U32(u32);
-    impl Ordered for U32 {
-        fn eq(&self, other: &Self) -> bool {
-            self.0 == other.0
-        }
-
-        fn leq(&self, other: &Self) -> bool {
-            self.0 <= other.0
-        }
-
-        fn lt(&self, other: &Self) -> bool {
-            self.0 < other.0
-        }
-    }
+    use crate::{
+        chap03::leftist_heap::LeftistHeap,
+        common::{heap::Heap, int::Int},
+    };
 
     #[test]
     fn test_from_list() {
         let mut h = LeftistHeap::from_list(
             [1, 6, 4, 5, 8, 3, 1, 9, 9, 7, 2, 0]
                 .into_iter()
-                .map(|n| U32(n))
+                .map(|n| Int(n))
                 .collect(),
         );
 
@@ -170,7 +155,7 @@ mod test {
     fn test_from_iter() {
         let mut h: LeftistHeap<_> = [1, 6, 4, 5, 8, 3, 1, 9, 9, 7, 2, 0]
             .into_iter()
-            .map(|n| U32(n))
+            .map(|n| Int(n))
             .collect();
 
         let mut v = vec![];

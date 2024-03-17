@@ -280,26 +280,12 @@ impl<T: Ordered + Clone> RedBlackTree<T> {
 mod test {
     use crate::{
         chap02::list::List,
-        common::{ordered::Ordered, set::Set, stack::Stack},
+        chap03::red_black_tree::Color,
+        common::{int::Int, ordered::Ordered, set::Set, stack::Stack},
     };
+    use Color::*;
 
-    use super::{Color, Color::*, RedBlackTree, RedBlackTreeCell::*};
-
-    #[derive(Clone)]
-    struct U32(u32);
-    impl Ordered for U32 {
-        fn eq(&self, other: &Self) -> bool {
-            self.0 == other.0
-        }
-
-        fn leq(&self, other: &Self) -> bool {
-            self.0 <= other.0
-        }
-
-        fn lt(&self, other: &Self) -> bool {
-            self.0 < other.0
-        }
-    }
+    use super::{RedBlackTree, RedBlackTreeCell::*};
 
     impl<T: Ordered + Clone> RedBlackTree<T> {
         fn is_balanced(&self) -> bool {
@@ -349,23 +335,23 @@ mod test {
     #[test]
     fn test() {
         let set = RedBlackTree::empty()
-            .insert(U32(3))
-            .insert(U32(5))
-            .insert(U32(1))
-            .insert(U32(3))
-            .insert(U32(2))
-            .insert(U32(7))
-            .insert(U32(5))
-            .insert(U32(8))
-            .insert(U32(9))
-            .insert(U32(3))
-            .insert(U32(6))
-            .insert(U32(10))
-            .insert(U32(3))
-            .insert(U32(4));
+            .insert(Int(3))
+            .insert(Int(5))
+            .insert(Int(1))
+            .insert(Int(3))
+            .insert(Int(2))
+            .insert(Int(7))
+            .insert(Int(5))
+            .insert(Int(8))
+            .insert(Int(9))
+            .insert(Int(3))
+            .insert(Int(6))
+            .insert(Int(10))
+            .insert(Int(3))
+            .insert(Int(4));
 
-        println!("1 is member?: {}", set.member(U32(1)));
-        println!("2 is member?: {}", set.member(U32(2)));
+        println!("1 is member?: {}", set.member(Int(1)));
+        println!("2 is member?: {}", set.member(Int(2)));
         println!("is balanced? : {}", set.is_balanced());
         println!("{:?}", set.traverse().map(|x| x.0));
     }
@@ -373,24 +359,24 @@ mod test {
     #[test]
     fn test_from_ord_list() {
         let l = List::empty()
-            .cons(U32(12))
-            .cons(U32(11))
-            .cons(U32(10))
-            .cons(U32(9))
-            .cons(U32(8))
-            .cons(U32(7))
-            .cons(U32(6))
-            .cons(U32(5))
-            .cons(U32(4))
-            .cons(U32(3))
-            .cons(U32(2))
-            .cons(U32(1))
-            .cons(U32(0));
+            .cons(Int(12))
+            .cons(Int(11))
+            .cons(Int(10))
+            .cons(Int(9))
+            .cons(Int(8))
+            .cons(Int(7))
+            .cons(Int(6))
+            .cons(Int(5))
+            .cons(Int(4))
+            .cons(Int(3))
+            .cons(Int(2))
+            .cons(Int(1))
+            .cons(Int(0));
 
         let set = RedBlackTree::from_ord_list(l);
 
-        println!("12 is member?: {}", set.member(U32(12)));
-        println!("13 is member?: {}", set.member(U32(13)));
+        println!("12 is member?: {}", set.member(Int(12)));
+        println!("13 is member?: {}", set.member(Int(13)));
         println!("is balanced? : {}", set.is_balanced());
         println!("{:?}", set.traverse().map(|x| x.0));
     }
