@@ -14,6 +14,8 @@ enum PairingHeap<T> {
 }
 use PairingHeap::*;
 
+use super::pairing_heap_new::PairingHeap as PairingHeapNew;
+
 impl<T: Ordered + Clone> Heap<T> for PairingHeap<T> {
     fn empty() -> Self {
         E
@@ -65,6 +67,26 @@ impl<T: Ordered + Clone> Heap<T> for PairingHeap<T> {
         match self {
             E => Err("empty heap.".to_string()),
             T(_, l) => Ok(merge_pairs(l)),
+        }
+    }
+}
+
+impl<T: Ordered + Clone> PairingHeap<T> {
+    // 演習問題 5.8(a)
+    fn to_binary(&self) -> PairingHeapNew<T> {
+        fn list_to_binary<T: Ordered + Clone>(l: &List<PairingHeap<T>>) -> PairingHeapNew<T> {
+            match l.get() {
+                Ok((h, l_bros)) => {
+                    let T(x, l_child) = h else { unreachable!() };
+                    PairingHeapNew::from(list_to_binary(&l_child), x, list_to_binary(&l_bros))
+                }
+                Err(_) => PairingHeapNew::empty(),
+            }
+        }
+
+        match self {
+            E => PairingHeapNew::empty(),
+            T(x, l) => PairingHeapNew::from(list_to_binary(l), x.clone(), PairingHeapNew::empty()),
         }
     }
 }
