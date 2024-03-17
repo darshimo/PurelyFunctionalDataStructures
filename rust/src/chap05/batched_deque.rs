@@ -1,3 +1,5 @@
+// 演習問題 5.1(a)
+
 use crate::{
     chap02::list::List,
     common::{deque::Deque, stack::Stack},

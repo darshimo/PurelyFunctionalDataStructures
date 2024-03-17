@@ -1,3 +1,5 @@
+// 図5.3
+
 pub trait Deque<T> {
     fn empty() -> Self;
     fn is_empty(&self) -> bool;
