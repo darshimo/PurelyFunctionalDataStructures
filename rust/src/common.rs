@@ -1,3 +1,4 @@
+pub mod deque;
 pub mod finite_map;
 pub mod heap;
 pub mod ordered;
