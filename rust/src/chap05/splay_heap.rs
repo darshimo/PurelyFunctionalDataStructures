@@ -162,4 +162,54 @@ impl<T: Ordered + Clone> SplayHeap<T> {
             }
         }
     }
+
+    // 演習問題 5.7
+    fn sort(l: List<T>) -> List<T> {
+        fn make_heap<T: Ordered + Clone>(l: List<T>, h: SplayHeap<T>) -> SplayHeap<T> {
+            match l.get() {
+                Ok((x, l_)) => make_heap(l_, h.insert(x)),
+                Err(_) => h,
+            }
+        }
+
+        fn sort_<T: Ordered + Clone>(h: SplayHeap<T>, l: List<T>) -> List<T> {
+            match &*h.0 {
+                E => l,
+                T(a, x, b) => {
+                    let l1 = sort_(b.clone(), l);
+                    let l2 = l1.cons(x.clone());
+                    let l3 = sort_(a.clone(), l2);
+                    l3
+                }
+            }
+        }
+
+        let h = make_heap(l, SplayHeap::empty());
+        sort_(h, List::empty())
+    }
+}
+
+mod test {
+    use crate::{
+        chap02::list::List,
+        common::{int::Int, stack::Stack},
+    };
+
+    use super::SplayHeap;
+
+    #[test]
+    fn test() {
+        let l = List::empty()
+            .cons(Int(3))
+            .cons(Int(1))
+            .cons(Int(2))
+            .cons(Int(4))
+            .cons(Int(1))
+            .cons(Int(0))
+            .cons(Int(5));
+        println!("{:?}", l);
+
+        let l = SplayHeap::sort(l);
+        println!("{:?}", l);
+    }
 }
