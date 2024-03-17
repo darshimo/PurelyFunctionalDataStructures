@@ -1,5 +1,6 @@
 pub mod finite_map;
 pub mod heap;
+pub mod int;
 pub mod ordered;
 pub mod set;
 pub mod stack;
