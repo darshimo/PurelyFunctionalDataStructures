@@ -85,6 +85,17 @@ impl<T: Clone> List<T> {
 
         enumerate_(0, self)
     }
+
+    pub fn split(&self, n: usize) -> (List<T>, List<T>) {
+        if n == 0 {
+            (List::empty(), self.clone())
+        } else if let Ok((x, t)) = self.get() {
+            let (l1, l2) = t.split(n - 1);
+            (l1.cons(x), l2)
+        } else {
+            (List::empty(), List::empty())
+        }
+    }
 }
 
 mod test {
